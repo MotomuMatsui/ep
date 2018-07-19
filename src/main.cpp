@@ -28,6 +28,7 @@ extern void bl2mat(ifstream&, double*&, int const&);
 extern void sc2nwk(int* const&, string&, int const&);
 extern void addEP(string const&, string&, unordered_map<string, double>&, int const&, int const&);
 extern void addLABEL(string const&, string&, string const&, int const&);
+extern void writeMAT(double*&, ofstream&, int const&);
 
 /// mmseqs.cpp (Wrapper function of MMseqs)
 extern void mmseqs(string const&, string const&, string const&, string const&);
@@ -35,6 +36,10 @@ extern void mmseqs(string const&, string const&, string const&, string const&);
 /// gs.cpp (Core functions of GS method)
 extern void GS(double* const&, int*&, int const&);
 extern void EP(double* const&, unordered_map<string, double>&, function<double()>&, int const&);
+extern void EP2(double* const&, unordered_map<string, double>&, function<double()>&, int const&, string const&);
+
+/// nj.cpp (Core functions of NJ method)
+extern void NJ(double*&, string&, int const&, string const&, string&);
 
 /// messages.cpp
 extern void print_banner();
@@ -197,6 +202,8 @@ int main(int argc, char* argv[]){
   auto annotation_txt = regex_replace(original_fasta, re, "_annotation.txt");
   auto simple_fasta   = regex_replace(original_fasta, re, "_simple.fst");
   auto mmseqs_result  = regex_replace(original_fasta, re, "_mmseqs.txt");
+  auto matrix_txt     = regex_replace(original_fasta, re, "_mat.txt");
+  auto matrix_tmp     = regex_replace(original_fasta, re, "_mat_tmp.txt");
   
   ifstream ifs1(original_fasta); // Fasta file (original)
   ofstream ofs1(annotation_txt); // Annotation file
@@ -301,6 +308,10 @@ int main(int argc, char* argv[]){
 
   /*PRINT*/ if(!silence) cerr << "  done.         " << endl << endl;
 
+  string newick_NJ;
+  string nj;
+  NJ(W, nj, size, matrix_txt, newick_NJ);
+
   /*/ Generating GS tree Newick based on the spectral clustering /*/
   sc2nwk(gs, newick, size);
     // gs: INPUT (result of stepwise spectral clustering)
@@ -329,16 +340,19 @@ int main(int argc, char* argv[]){
 
     for(int n=1; n<=ep_num; n++){
       /*PRINT*/ if(!silence) cerr << "  " << n << "/" << ep_num << " iterations" << "\r"<< flush;
-      EP(W, ep, R, size);
+      //EP(W, ep, R, size);
         // W: INPUT (sequence similarity matrix)
         // ep: OUTPUT (result of Edge Perturbation method)
         // R: random number generator
+
+      EP2(W, ep, R, size, matrix_tmp);
     }
     
     /*PRINT*/ if(!silence) cerr << "\n  done." << endl << endl;
     /*PRINT*/ if(!silence) cerr << "------------------------------------------\n" << endl;
 
-    addEP(newick, newick_EP, ep, ep_num, size);
+    //addEP(newick, newick_EP, ep, ep_num, size);
+    addEP(nj, newick_EP, ep, ep_num, size);
       // newick: INPUT (GS tree [newick format])
       // newick_EP: OUTPUT (GS+EP tree [newick format])
       // ep: INPUT (result of Edge Perturbation method)
@@ -361,8 +375,9 @@ int main(int argc, char* argv[]){
     /*/ GS tree WITHOUT EP values ->STDOUT /*/
     if(label==1){
       string newick_ann;
-      addLABEL(newick, newick_ann, annotation_txt, size);
-
+      //addLABEL(newick, newick_ann, annotation_txt, size);
+      addLABEL(nj, newick_ann, annotation_txt, size);
+      
       cout << newick_ann << endl;
     }
     else{

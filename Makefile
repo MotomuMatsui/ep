@@ -23,7 +23,9 @@ OBJECTS  += gs_functions.o
 OBJECTS  += sc_functions.o
 OBJECTS  += sc.o
 OBJECTS  += ep.o
+OBJECTS  += ep2.o
 OBJECTS  += gs.o
+OBJECTS  += nj.o
 OBJECTS  += main.o
 
 FILE  := lapack-3.7.1/make.inc
@@ -31,7 +33,7 @@ EXIST := $(shell ls | grep ${FILE})
 
 .PHONY: all
 #all: mmseqs lapack gs2 clean
-all: lapack gs2 clean
+all: ep clean
 
 .PHONY: mmseqs
 mmseqs:
@@ -56,7 +58,7 @@ lapack:
 	$(CP) -f lapack-3.7.1/CBLAS/include/*.h lib
 	$(CP) -f lapack-3.7.1/LAPACKE/include/*.h lib
 
-gs2: eigen.o $(OBJECTS)
+ep: eigen.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIB)
 
 eigen.o: eigen.cpp
