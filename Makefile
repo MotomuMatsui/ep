@@ -32,7 +32,6 @@ FILE  := lapack-3.7.1/make.inc
 EXIST := $(shell ls | grep ${FILE})
 
 .PHONY: all
-#all: mmseqs lapack gs2 clean
 all: ep clean
 
 .PHONY: mmseqs
