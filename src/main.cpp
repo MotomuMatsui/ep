@@ -30,7 +30,7 @@ extern void print_usage(char*&);
 extern void readMAT(ifstream&, double*&, int&);
 
 // ep.cpp
-extern void EP(double* const&, double*&, function<double()>&, int const&);
+extern void EP(double* const&, function<double()>&, int const&);
 
 int main(int argc, char* argv[]){
 
@@ -107,10 +107,6 @@ int main(int argc, char* argv[]){
     return -1;
   }
 
-  /*/Variables/*/
-  double* W;     // Distance matrix
-  int size;      // Row size of W (W is a synmetry matrix)
-
   /*/File I/O/*/
   auto original_file = string(input);
   ifstream ifs1(original_file); // Matrix file (original)
@@ -120,15 +116,24 @@ int main(int argc, char* argv[]){
   }
 
   /*/Parsing matrix file/*/
+  double* W;     // Distance matrix
+  int size;      // Row size of W (W is a synmetry matrix)
   readMAT(ifs1, W, size); 
          // ifs1: INPUT (original matrix file)
          // W:    OUTPUT (matrix)
          // size: # of sequence = row size of sequence similarity matrix
 
+  /*PRINT*/ cout << "[Original]" << endl;
+  for(int i=0; i<size; i++){
+    for(int j=0; j<size; j++){
+      cout << W[i*size+j] << "\t";
+    }
+    cout << endl;
+  }
+  cout << endl;  
+  
   /*/EP method/*/
   if(ep_num>0){
-    unordered_map<string, double> ep;
-
     // Random number generator (Uniform distribution->Mersenne Twister)
     function<double()> R;
     uniform_real_distribution<double> urd(0,1);    // uniform distributed random number
@@ -145,19 +150,10 @@ int main(int argc, char* argv[]){
 
     for(int n=1; n<=ep_num; n++){
       /*PRINT*/ cout << "[" << n << "]" << endl;
-      double* E;     // Distance matrix
-      EP(W, E, R, size);
-      // W: INPUT (sequence similarity matrix)
-      // E: OUTPUT (result of Edge Perturbation method)
-      // R: random number generator
 
-      for(int i=0; i<size; i++){
-	for(int j=0; j<size; j++){
-	  cout << E[i*size+j] << "\t";
-	}
-	cout << endl;
-      }
-      cout << endl;
+      EP(W, R, size);
+          // W: INPUT (sequence similarity matrix)
+          // R: random number generator
     }
   }
 
